@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, url_for
-from models import db, user
+from models import db, User
 from forms import SignupForm
 import configparser
 from os import path
@@ -10,9 +10,8 @@ cfg = configparser.ConfigParser()
 if path.isfile('config.ini'):
     cfg.read('config.ini')
 else:
-    print ('No config.ini file found')
+    print('No config.ini file found')
     exit(1)
-
 
 app = Flask(__name__)
 
@@ -20,10 +19,15 @@ app.secret_key = "dev"
 
 # Database connectiona and table
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///weblogin.sqlite3'
-                                        #'cfg['database']['SQLALCHEMY_DATABASE_URI']
+# 'cfg['database']['SQLALCHEMY_DATABASE_URI']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
+with app.app_context():
+    # Extensions like Flask-SQLAlchemy now know what the "current" app
+    # is while within this block. Therefore, you can now run........
+    db.create_all()
+
 
 @app.route('/', methods=['GET'])
 def index():
@@ -40,18 +44,18 @@ def signup():
         if not form.validate():
             return render_template('signup.html', form=form)
         else:
-            email_veristy_code = str(uuid.uuid1())
-            newuser = user(form.first_name.data,
+            email_verify_code = str(uuid.uuid1())
+            newuser = User(form.first_name.data,
                            form.last_name.data,
                            form.email.data,
                            form.password.data,
                            False,
-                           email_veristy_code,
+                           email_verify_code,
                            False)
             db.session.add(newuser)
             db.session.commit()
 
-            return "success meet requirements"
+            return email_verify_code # "success meet requirements"
 
 
 if __name__ == '__main__':
