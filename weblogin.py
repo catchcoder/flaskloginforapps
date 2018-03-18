@@ -110,7 +110,7 @@ def login():
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    if cfg['system_settings']['disable_signup']:
+    if cfg['system_settings']['disable_signup'] == "True":
         return redirect(url_for('index'))
 
     form = SignupForm()
