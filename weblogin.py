@@ -1,6 +1,8 @@
-from flask import Flask, render_template, request, url_for
+from flask import Flask, render_template, request, url_for, session, redirect
+from flask_mail import Mail, Message
+from urllib import parse
 from models import db, User
-from forms import SignupForm
+from forms import SignupForm, LoginForm
 import configparser
 from os import path
 import uuid
@@ -15,11 +17,10 @@ else:
 
 app = Flask(__name__)
 
-app.secret_key = "dev"
+app.secret_key = "Development Key"
 
 # Database connectiona and table
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///weblogin.sqlite3'
-# 'cfg['database']['SQLALCHEMY_DATABASE_URI']
+app.config['SQLALCHEMY_DATABASE_URI'] = cfg['database']['SQLALCHEMY_DATABASE_URI']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
@@ -29,10 +30,67 @@ with app.app_context():
     db.create_all()
 
 
+# Mailer
+mail = Mail(app)
+
+app.config.update(
+    DEBUG=True,
+    MAIL_SERVER=cfg['mail']['MAIL_SERVER'],
+    MAIL_PORT=cfg['mail']['MAIL_PORT'],
+    MAIL_USE_SSL=True,
+    MAIL_USERNAME=cfg['mail']['MAIL_USERNAME'],
+    MAIL_PASSWORD=cfg['mail']['MAIL_PASSWORD']
+)
+
+mail = Mail(app)
+
+
 @app.route('/', methods=['GET'])
 def index():
-    return app.config['SQLALCHEMY_DATABASE_URI']
     return render_template('index.html')
+
+
+@app.route('/home')
+def home():
+    if 'email' not in session:
+        return redirect(url_for('index'))
+    return render_template('home.html')
+
+
+@app.route('/logoff')
+def logoff():
+    if 'email' in session:
+        session.pop('email')
+    return redirect(url_for('index'))
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if request.method == 'POST':
+        if not form.validate():
+            return render_template('login.html', form=form)
+        else:
+            email = form.email.data
+            password = form.password.data
+
+            user = User.query.filter_by(email=email).first()
+            if user is None:
+                return redirect(url_for('login', id='noaccount'))
+            # Check if account has been verified
+            if not user.account_verified:
+                return redirect(url_for('login', id='emailnotverified'))
+
+            # Check password
+            if user is not None and user.check_password(password):
+               #  return user.check_password(password)
+                session['email'] = email
+                return redirect(url_for('home'))
+            else:
+                return redirect(url_for('login'))
+
+    elif request.method == 'GET':
+        return render_template('login.html', form=form)
 
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -55,7 +113,43 @@ def signup():
             db.session.add(newuser)
             db.session.commit()
 
-            return email_verify_code # "success meet requirements"
+            confirmurl = "http://localhost/" + \
+                parse.quote(form.email.data) + "/" + email_verify_code
+
+            emailuser(form.email.data, confirmurl)
+
+            return redirect(url_for('login'))  # "success meet requirements"
+
+
+def emailuser(email, confirmurl):
+
+    msg = Message(subject="FlaskLogin confirm registation",
+                  sender="Register@flasklogin.com",
+                  recipients=[email])
+    msg.html = "<!DOCTYPE html>"
+    msg.html += "<h2>Weblogin - please confirm email address</h2>"
+    msg.html += "<div>Click on the link to activate the your account.</div>"
+    msg.html += "<div><a href=\"" + confirmurl + "\">Activate account</a><div>"
+    mail.send(msg)
+
+
+@app.route('/<email>/<email_verify_code>')
+def authcheck(email, email_verify_code):
+
+    user = User.query.filter_by(email=email).first()
+    if user is None:
+        return ('not in db')
+
+    if user.email_verify_code == email_verify_code:
+        user.account_verified = True
+        db.session.commit()
+        # return render_template(url_for('login'))
+        return redirect(url_for('login'))
+
+    else:
+        return ('sadly it doesn\'t match')
+
+    return ("email {} \br authcode {}".format(email, email_verify_code))
 
 
 if __name__ == '__main__':

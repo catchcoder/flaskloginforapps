@@ -11,7 +11,11 @@
 <body>
 <div class="container">
 <nav class="navbar navbar-toggleable-md navbar-light bg-faded">
-  <a class="navbar-brand" href="/">
+ {% if "email" not in session %}
+         <a class="navbar-brand" href="/">
+      {% else %}
+      <a class="navbar-brand" href="/home">
+      {% endif %}
     <img src="{{  url_for('static', filename='images/favicon.png') }}" width="30" height="30" class="d-inline-block align-top" alt="">Home control
   </a>
  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
@@ -19,9 +23,14 @@
   </button>
   <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
     <div class="navbar-nav">
-      <a class="nav-item nav-link" href=" url_for('login') ">Login</a>
+     {% if "email" not in session %}
+      <a class="nav-item nav-link" href="{{ url_for('login') }}">Login</a>
       <a class="nav-item nav-link" href="{{ url_for('signup') }}">Signup</a>
-      <a class="nav-item nav-link" href="url_for('logoff') ">Logoff</a>
+    {% endif %}
+        {% if "email" in session %}
+            <a class="nav-item nav-link" href="{{ url_for('home') }}">Control</a>
+            <a class="nav-item nav-link" href="{{ url_for('logoff') }}">Logoff</a>
+        {% endif %}
     </div>
   </div>
 </nav>
