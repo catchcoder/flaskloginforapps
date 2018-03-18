@@ -1,0 +1,11 @@
+[database]
+SQLALCHEMY_DATABASE_URI: sqlite:///weblogin.sqlite3
+
+[mail]
+MAIL_SERVER: smtp.gmail.com
+MAIL_PORT: 465
+MAIL_USERNAME: {gmail email}
+MAIL_PASSWORD: {app password}
+
+[system_settings]
+disable_signup: False
