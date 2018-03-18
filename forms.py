@@ -14,10 +14,13 @@ class SignupForm(FlaskForm):
     password = PasswordField('Password',
                              validators=[DataRequired("Please enter your Password."),
                                          Length(
-                                             min=8, message="Passwords must be 8 characters or more."),
-                                         EqualTo('confirm', message='Passwords must match')])
+                                             min=8,
+                                             message="Passwords must be 8 characters or more."),
+                                         EqualTo('confirm',
+                                                 message='Passwords must match')])
     confirm = PasswordField('Repeat Password', validators=[DataRequired(
-        "Please confirm your Password."), Length(min=8, message="")])
+        "Please confirm your Password."), Length(min=8,
+                                                 message="")])
     submit = SubmitField('Sign up', validators=[DataRequired()])
 
 
@@ -28,5 +31,6 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password',
                              validators=[DataRequired("Please enter your Password."),
                                          Length(
-                                             min=8, message="Passwords must be 8 characters or more.")])
+                                             min=8,
+                                             message="Passwords must be 8 characters or more.")])
     submit = SubmitField('Login', validators=[DataRequired()])
