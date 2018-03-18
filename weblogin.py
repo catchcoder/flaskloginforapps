@@ -85,7 +85,7 @@ def login():
         if not form.validate():
             return render_template('login.html', form=form)
         else:
-            email = form.email.data
+            email = form.email.data.lower().strip()
             password = form.password.data
 
             user = User.query.filter_by(email=email).first()
@@ -121,9 +121,9 @@ def signup():
             return render_template('signup.html', form=form)
         else:
             email_verify_code = str(uuid.uuid1())
-            newuser = User(form.first_name.data,
-                           form.last_name.data,
-                           form.email.data,
+            newuser = User(form.first_name.data.strip(),
+                           form.last_name.data.strip(),
+                           form.email.data.lower().strip(),
                            form.password.data,
                            False,
                            email_verify_code,
@@ -149,6 +149,7 @@ def authcheck(email, email_verify_code):
 
     if user.email_verify_code == email_verify_code:
         user.account_verified = True
+        user.email_verify_code = ""
         db.session.commit()
         # return render_template(url_for('login'))
         return redirect(url_for('login'))
