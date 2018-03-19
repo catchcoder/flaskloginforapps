@@ -20,7 +20,12 @@ from flask import Flask, render_template, request, url_for, session, redirect
 from flask_mail import Mail, Message
 from models import db, User, system_settings
 from forms import SignupForm, LoginForm
+app = Flask(__name__)
+
+app.secret_key = "Development Key"
+
 # Import code for webapp
+
 from webapp import *
 
 # Load setting and passwords from config.ini
@@ -34,9 +39,6 @@ else:
     exit(1)
 
 
-app = Flask(__name__)
-
-app.secret_key = "Development Key"
 
 # Database connectiona and table
 app.config['SQLALCHEMY_DATABASE_URI'] = \

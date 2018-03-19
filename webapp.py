@@ -5,10 +5,10 @@ Info for sysfs: https://www.kernel.org/doc/Documentation/gpio/sysfs.txt
 https://elinux.org/RPi_Low-level_peripherals
 """
 
-from flask import Flask, render_template, request, redirect, url_for
+#from flask import Flask, render_template, request, redirect, url_for
 from RPi import GPIO
 
-app = Flask('__name__')
+#app = Flask('__name__')
 # db_location = 'data.sqlite3'
 # db_table = 'GPIO_Outputs'
 # conn = sqlite3.connect(db_location)
@@ -86,30 +86,30 @@ def swap_states():
         GPIO.output(pin, not check_gpio_state(pin))
 
 
-@app.route('/app')
-def index():
+@app.route('/webapp')
+def webapp():
     check_all_gpios()
-    return render_template('index.html', gpio_pin_state=gpio_pin_state)
+    return render_template('home.html', gpio_pin_state=gpio_pin_state)
 
 
 @app.route('/gpioon/<int:gpio_pin>')
 def gpioon(gpio_pin):
     if gpio_pin in GPIO_PINS:
         GPIO.output(gpio_pin, True)
-    return redirect(url_for('index'))
+    return redirect(url_for('home'))
 
 
 @app.route('/gpiooff/<int:gpio_pin>')
 def gpiooff(gpio_pin):
     if gpio_pin in GPIO_PINS:
         GPIO.output(gpio_pin, False)
-    return redirect(url_for('index'))
+    return redirect(url_for('home'))
 
 
 @app.route('/switch')
 def switch():
     swap_states()
-    return redirect(url_for('index'))
+    return redirect(url_for('home'))
 
 
 @app.route('/all/<state>')
@@ -118,8 +118,8 @@ def all(state):
         allonoroff(False)
     else:
         allonoroff(True)
-    return redirect(url_for('index'))
+    return redirect(url_for('home'))
 
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+#if __name__ == '__main__':
+#    app.run(host='0.0.0.0', port=5000, debug=True)
