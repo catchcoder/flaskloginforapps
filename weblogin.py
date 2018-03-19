@@ -1,16 +1,34 @@
+#!/usr/bin/env python
+"""
+title           :weblogin.py
+description     :Frontend for other web app that need securing.
+author          :Chris Hawkins
+date            :20180318
+version         :0.8
+usage           :python weblogin.py
+notes           :Need tin run pip install -r requirements.txt
+python_version  :3.5+
+============================================ ==================================
+"""
+
+# Import the modules needed to run the script.
+import configparser
+import uuid
+from os import path
+from urllib import parse
 from flask import Flask, render_template, request, url_for, session, redirect
 from flask_mail import Mail, Message
-from urllib import parse
 from models import db, User, system_settings
 from forms import SignupForm, LoginForm
-import configparser
-from os import path
-import uuid
+# Import code for webapp
+from webapp import *
 
-cfg = configparser.ConfigParser()
+# Load setting and passwords from config.ini
+# config.ini.example if provided, rename and edit
+CFG = configparser.ConfigParser()
 # Check if config.ini file exist before loading
 if path.isfile('config.ini'):
-    cfg.read('config.ini')
+    CFG.read('config.ini')
 else:
     print('No config.ini file found')
     exit(1)
@@ -22,7 +40,7 @@ app.secret_key = "Development Key"
 
 # Database connectiona and table
 app.config['SQLALCHEMY_DATABASE_URI'] = \
-    cfg['database']['SQLALCHEMY_DATABASE_URI']
+    CFG['database']['SQLALCHEMY_DATABASE_URI']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
@@ -37,11 +55,11 @@ mail = Mail(app)
 
 app.config.update(
     DEBUG=True,
-    MAIL_SERVER=cfg['mail']['MAIL_SERVER'],
-    MAIL_PORT=cfg['mail']['MAIL_PORT'],
+    MAIL_SERVER=CFG['mail']['MAIL_SERVER'],
+    MAIL_PORT=CFG['mail']['MAIL_PORT'],
     MAIL_USE_SSL=True,
-    MAIL_USERNAME=cfg['mail']['MAIL_USERNAME'],
-    MAIL_PASSWORD=cfg['mail']['MAIL_PASSWORD']
+    MAIL_USERNAME=CFG['mail']['MAIL_USERNAME'],
+    MAIL_PASSWORD=CFG['mail']['MAIL_PASSWORD']
 )
 
 mail = Mail(app)
@@ -110,7 +128,7 @@ def login():
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    if cfg['system_settings']['disable_signup'] == "True":
+    if CFG['system_settings']['disable_signup'] == "True":
         return redirect(url_for('index'))
 
     form = SignupForm()
@@ -155,9 +173,9 @@ def authcheck(email, email_verify_code):
         return redirect(url_for('login'))
 
     else:
-        return ('sadly it doesn\'t match')
+        return 'sadly it doesn\'t match'
 
-    return ("email {} \br authcode {}".format(email, email_verify_code))
+    return "email {} \br authcode {}".format(email, email_verify_code)
 
 
 if __name__ == '__main__':

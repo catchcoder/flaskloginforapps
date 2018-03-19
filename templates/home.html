@@ -1,10 +1,49 @@
-{% extends 'layout.html' %}
+{% extends "layout.html" %}
 
 {% block content %}
+<div class="container">
 
-<div class="jumbotron">
+    <div class="row">
+        <div class="col-md-6">
+            <h2>RPi GPIO control</h2>
+            <h3><small>Python/Flask/GPIO</small></h3>
+        </div>
+        <div class="col-md-6">
+            <a href="{{ url_for('switch')  }}" class="btn btn-warning">switch</a>
+            <a href="{{ url_for('all',state='off') }}" class="btn btn-danger">All Off</a>
 
-    <h2><span>Logged in, you can now control devices</span></h2>
+            <a href="{{ url_for('all',state='on') }}" class="btn btn-primary">All On</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table table-striped">
+                <tbody>
+    {% for pin, state in gpio_pin_state.items() %}
+                <tr><td><p class="text-right">
+            GPIO {{pin}}</p></td>
+            <td><p class="text-left">
+        {% if state %}
+                    <button type="button" class="btn btn-success"></button>
+        {% else %}
+                    <button type="button" class="btn btn-danger"></button>
+        {% endif %}
+            </p>
+                </td>
+                <td><p class="text-left">
+                    <a href="{{ url_for('gpioon',gpio_pin=pin ) }}" class="btn btn-primary">On</a>
+                    <a href="{{ url_for('gpiooff',gpio_pin=pin) }}" class="btn btn-secondary">Off</a>
+                    </p>
+                </td>
+                </tr>
+    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
 </div>
 
 {% endblock %}
+
+
