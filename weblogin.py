@@ -18,15 +18,15 @@ from os import path
 from urllib import parse
 from flask import Flask, render_template, request, url_for, session, redirect
 from flask_mail import Mail, Message
-from models import db, User, system_settings
+
 from forms import SignupForm, LoginForm
 app = Flask(__name__)
 
 app.secret_key = "Development Key"
-
+from models import db, User, system_settings
 # Import code for webapp
 
-from webapp import *
+import webapp
 
 # Load setting and passwords from config.ini
 # config.ini.example if provided, rename and edit
@@ -67,15 +67,16 @@ app.config.update(
 mail = Mail(app)
 
 
-def emailuser(email, confirmurl):
+def emailuser(email, confirm_url, first_name):
 
-    msg = Message(subject="FlaskLogin confirm registation",
+    msg = Message(subject="Login confirm registation",
                   sender="Register@flasklogin.com",
                   recipients=[email])
-    msg.html = "<!DOCTYPE html>"
-    msg.html += "<h2>Weblogin - please confirm email address</h2>"
-    msg.html += "<div>Click on the link to activate the your account.</div>"
-    msg.html += "<div><a href=\"" + confirmurl + "\">Activate account</a><div>"
+    msg.html = render_template(url_for('email.html'),first_name, confirm_url)
+    # msg.html = "<!DOCTYPE html>"
+    # msg.html += "<h2>Weblogin - please confirm email address</h2>"
+    # msg.html += "<div>Click on the link to activate the your account.</div>"
+    # msg.html += "<div><a href=\"" + confirm_url + "\">Activate account</a><div>"
     mail.send(msg)
 
 
@@ -141,20 +142,22 @@ def signup():
             return render_template('signup.html', form=form)
         else:
             email_verify_code = str(uuid.uuid1())
-            newuser = User(form.first_name.data.strip(),
-                           form.last_name.data.strip(),
+            first_name = form.first_name.data.title().strip()
+            password =form.password.data
+            newuser = User(first_name,
+                           form.last_name.data.title.strip(),
                            form.email.data.lower().strip(),
-                           form.password.data,
+                           password,
                            False,
                            email_verify_code,
                            False)
             db.session.add(newuser)
             db.session.commit()
 
-            confirmurl = "http://localhost/" + \
+            confirmurl = "http://localhost:5000/" + \
                 parse.quote(form.email.data) + "/" + email_verify_code
 
-            emailuser(form.email.data, confirmurl)
+            emailuser(password, confirmurl, first_name)
 
             # "success meet requirements"
             return redirect(url_for('login', id='emailsent'))

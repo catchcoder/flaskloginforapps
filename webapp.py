@@ -4,8 +4,8 @@ Raspberry Pi, outputs controlled by web interface (python,flask)
 Info for sysfs: https://www.kernel.org/doc/Documentation/gpio/sysfs.txt
 https://elinux.org/RPi_Low-level_peripherals
 """
-
-#from flask import Flask, render_template, request, redirect, url_for
+from __main__ import app
+# from flask import Flask, render_template, request, redirect, url_for
 from RPi import GPIO
 
 #app = Flask('__name__')
