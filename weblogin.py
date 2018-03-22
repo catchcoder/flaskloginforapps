@@ -14,6 +14,7 @@ python_version  :3.5+
 # Import the modules needed to run the script.
 import configparser
 import uuid
+import RPi.GPIO as GPIO
 from os import path
 from urllib import parse
 from flask import Flask, render_template, request, url_for, session, redirect
@@ -25,7 +26,6 @@ app = Flask(__name__)
 app.secret_key = "Development Key"
 from models import db, User, system_settings
 # Import code for webapp
-
 import webapp
 
 # Load setting and passwords from config.ini
@@ -65,6 +65,13 @@ app.config.update(
 )
 
 mail = Mail(app)
+##############################################################
+
+
+
+
+
+##############################################################
 
 
 def emailuser(email, confirm_url, first_name):
@@ -79,6 +86,10 @@ def emailuser(email, confirm_url, first_name):
     # msg.html += "<div><a href=\"" + confirm_url + "\">Activate account</a><div>"
     mail.send(msg)
 
+def check_user_logged_in():
+    if 'email' not in session:
+        return redirect(url_for('index'))
+
 
 @app.route('/', methods=['GET'])
 def index():
@@ -87,9 +98,10 @@ def index():
 
 @app.route('/home')
 def home():
-    if 'email' not in session:
-        return redirect(url_for('index'))
-    return render_template('home.html')
+    check_user_logged_in()
+    # if 'email' not in session:
+    #     return redirect(url_for('index'))
+    return render_template('webapp.html', gpio_pin_state=gpio_pin_state)
 
 
 @app.route('/logoff')
@@ -97,6 +109,8 @@ def logoff():
     if 'email' in session:
         session.pop('email')
     return redirect(url_for('index'))
+
+
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -119,7 +133,7 @@ def login():
             # Check password
             if user is not None and user.check_password(password):
                 session['email'] = email
-                return redirect(url_for('home'))
+                return redirect(url_for('webapp'))
             else:
                 return redirect(url_for('login', id='failed'))
 

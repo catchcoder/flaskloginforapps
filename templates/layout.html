@@ -14,7 +14,7 @@
  {% if "email" not in session %}
          <a class="navbar-brand" href="/">
       {% else %}
-      <a class="navbar-brand" href="/home">
+      <a class="navbar-brand" href="/webapp">
       {% endif %}
     <img src="{{  url_for('static', filename='images/favicon.png') }}" width="30" height="30" class="d-inline-block align-top" alt="">Home control
   </a>
@@ -30,7 +30,7 @@
 
     {% endif %}
         {% if "email" in session %}
-            <a class="nav-item nav-link" href="{{ url_for('home') }}">Control</a>
+            <a class="nav-item nav-link" href="{{ url_for('webapp') }}">Control</a>
             <a class="nav-item nav-link" href="{{ url_for('logoff') }}">Logoff</a>
         {% endif %}
     </div>

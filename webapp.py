@@ -6,6 +6,7 @@ https://elinux.org/RPi_Low-level_peripherals
 """
 from __main__ import app
 # from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, url_for, session, redirect
 from RPi import GPIO
 
 #app = Flask('__name__')
@@ -85,31 +86,40 @@ def swap_states():
     for pin in GPIO_PINS:
         GPIO.output(pin, not check_gpio_state(pin))
 
+def check_user_logged_in():
+    if 'email' not in session:
+        return False
+    else:
+        return True
+        #return redirect(url_for('index'))
 
 @app.route('/webapp')
 def webapp():
-    check_all_gpios()
-    return render_template('home.html', gpio_pin_state=gpio_pin_state)
-
+    # eturn redirect(url_for('index'))
+    if check_all_gpios():
+        return render_template('home.html', gpio_pin_state=gpio_pin_state)
+    else:
+        return redirect(url_for('index'))
 
 @app.route('/gpioon/<int:gpio_pin>')
 def gpioon(gpio_pin):
     if gpio_pin in GPIO_PINS:
         GPIO.output(gpio_pin, True)
-    return redirect(url_for('home'))
+    return redirect(url_for('webapp'))
 
 
 @app.route('/gpiooff/<int:gpio_pin>')
 def gpiooff(gpio_pin):
     if gpio_pin in GPIO_PINS:
         GPIO.output(gpio_pin, False)
-    return redirect(url_for('home'))
+    return redirect(url_for('webapp'))
 
 
 @app.route('/switch')
 def switch():
+    check_user_logged_in()
     swap_states()
-    return redirect(url_for('home'))
+    return redirect(url_for('webapp'))
 
 
 @app.route('/all/<state>')
@@ -118,7 +128,7 @@ def all(state):
         allonoroff(False)
     else:
         allonoroff(True)
-    return redirect(url_for('home'))
+    return redirect(url_for('webapp'))
 
 
 #if __name__ == '__main__':
