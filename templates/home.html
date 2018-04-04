@@ -24,15 +24,15 @@
             GPIO {{pin}}</p></td>
             <td><p class="text-left">
         {% if state %}
-                    <button type="button" class="btn btn-success"></button>
+                    <button id='btn-{{ pin }}' type="button" class="btn btn-success"></button>
         {% else %}
-                    <button type="button" class="btn btn-danger"></button>
+                    <button id='btn-{{ pin }}' type="button" class="btn btn-danger"></button>
         {% endif %}
             </p>
                 </td>
                 <td><p class="text-left">
-                    <a href="{{ url_for('gpioon',gpio_pin=pin ) }}" class="btn btn-primary">On</a>
-                    <a href="{{ url_for('gpiooff',gpio_pin=pin) }}" class="btn btn-secondary">Off</a>
+                    <a href="{{ url_for('gpioon',gpio_pin=pin ) }}" id='on-{{pin}}' class="btn btn-primary">On</a>
+                    <a href="{{ url_for('gpiooff',gpio_pin=pin) }}" id='off-{{pin}}' class="btn btn-secondary">Off</a>
                     </p>
                 </td>
                 </tr>

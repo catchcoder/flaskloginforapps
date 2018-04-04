@@ -7,6 +7,34 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css' )}}" >
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css' ) }}" >
+    <script src="{{ url_for('static', filename='js/jquery-3.3.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+
+    <script type="text/javascript">
+        $(function() {
+            $("#evtTarget").on("mouseover mouseleave", highlight);
+
+            //$("#evtTarget").on("mouseover mouseleave", highlight);
+            $("#evtTarget").on("click", function (evt) {
+            $("#evtTarget").off("mouseover mouseleave", highlight);
+            $("#evtTarget").html("<p>hover effect shut off</p>");
+            $("#evtTarget").removeClass("highlighted");
+            });
+
+        });
+
+        function highlight(){
+            $("#evtTarget").toggleClass("highlighted");
+        }
+        //function highlight(evt) {
+        //    $("#evtTarget").toggleClass("highlighted");
+        //}
+    </script>
+    <style type='text/css'>
+        .highlighted {
+            background-color: Red;
+        }
+    </style>
 </head>
 <body>
 <div class="container">
@@ -30,7 +58,7 @@
 
     {% endif %}
         {% if "email" in session %}
-            <a class="nav-item nav-link" href="{{ url_for('webapp') }}">Control</a>
+            <a id="evtTarget" class="nav-item nav-link" href="{{ url_for('webapp') }}">Control</a>
             <a class="nav-item nav-link" href="{{ url_for('logoff') }}">Logoff</a>
         {% endif %}
     </div>
@@ -43,8 +71,7 @@
     <div class="footer"><p class="text-center">&copy; Chris Hawkins 2018</p></div>
     <div class="footer"><p class="text-center"><img src="https://img.shields.io/badge/Powered%20by-Python%20%7C%20Flask-blue.svg"></p></div>
 </div>
-<script src="{{ url_for('static', filename='js/jquery-3.3.1.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+
 </div>
 </body>
 </html>

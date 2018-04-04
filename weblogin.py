@@ -6,7 +6,7 @@ author          :Chris Hawkins
 date            :20180318
 version         :0.8
 usage           :python weblogin.py
-notes           :Need tin run pip install -r requirements.txt
+notes           :Need to run pip install -r requirements.txt
 python_version  :3.5+
 ============================================ ==================================
 """
@@ -15,6 +15,7 @@ python_version  :3.5+
 import configparser
 import uuid
 import RPi.GPIO as GPIO
+from functools import wraps
 from os import path
 from urllib import parse
 from flask import Flask, render_template, request, url_for, session, redirect
@@ -25,8 +26,7 @@ app = Flask(__name__)
 
 app.secret_key = "Development Key"
 from models import db, User, system_settings
-# Import code for webapp
-import webapp
+
 
 # Load setting and passwords from config.ini
 # config.ini.example if provided, rename and edit
@@ -76,7 +76,7 @@ mail = Mail(app)
 
 def emailuser(email, confirm_url, first_name):
 
-    msg = Message(subject="Login confirm registation",
+    msg = Message(subject="Login confirm registration",
                   sender="Register@flasklogin.com",
                   recipients=[email])
     msg.html = render_template(url_for('email.html'),first_name, confirm_url)
@@ -86,9 +86,16 @@ def emailuser(email, confirm_url, first_name):
     # msg.html += "<div><a href=\"" + confirm_url + "\">Activate account</a><div>"
     mail.send(msg)
 
-def check_user_logged_in():
-    if 'email' not in session:
-        return redirect(url_for('index'))
+
+def check_login(func):
+    @wraps(func)
+    def func_wrapper(*args, **kwargs):
+        if 'email' not in session:
+            return redirect(url_for('index'))
+
+        return func(*args, **kwargs)
+
+    return func_wrapper
 
 
 @app.route('/', methods=['GET'])
@@ -98,10 +105,9 @@ def index():
 
 @app.route('/home')
 def home():
-    check_user_logged_in()
     # if 'email' not in session:
     #     return redirect(url_for('index'))
-    return render_template('webapp.html', gpio_pin_state=gpio_pin_state)
+    return render_template('home.html', gpio_pin_state=gpio_pin_state)
 
 
 @app.route('/logoff')
@@ -109,9 +115,6 @@ def logoff():
     if 'email' in session:
         session.pop('email')
     return redirect(url_for('index'))
-
-
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -196,6 +199,113 @@ def authcheck(email, email_verify_code):
 
     return "email {} \br authcode {}".format(email, email_verify_code)
 
+########################## Put code here #############################
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+
+
+GPIO_PINS = [17, 27, 22, 10, 9, 11, 5, 6, 13]
+gpio_pin_state = {}
+
+
+def setup_outputs():
+    """ Setup GPIOs for outputs.
+    """
+    for pin in GPIO_PINS:
+        GPIO.setup(pin, GPIO.OUT)
+
+
+setup_outputs()
+
+GPIO.setup(2, GPIO.OUT)
+GPIO.output(2, False)
+
+gpio_path = "/sys/class/gpio/gpio{}/value"
+# gpio_path = "/home/chris/repos/flaskapp/value"
+
+
+def check_gpio_state(pin):
+    """ Read value file (one character) for either 0 or a 1
+    """
+    try:
+        with open(gpio_path.format(pin)) as gpiopin:
+            status = gpiopin.read(1)
+    except Exception:
+        status = 0
+
+    return True if status == "1" else False
+
+
+def check_all_gpios():
+    """ reload dictionary of GPIO's statues T or F
+    """
+    global gpio_pin_state
+    gpio_pin_state = {}
+
+    for pin in GPIO_PINS:
+        gpio_pin_state[pin] = check_gpio_state(pin)
+
+
+def allonoroff(state):
+    """ Set all GPIOs dictionary to either T or F
+    """
+    for pin in GPIO_PINS:
+        GPIO.output(pin, state)
+
+
+def swap_states():
+    """ flip state of all GPIO's to their opposite state
+    """
+    for pin in GPIO_PINS:
+        GPIO.output(pin, not check_gpio_state(pin))
+
+
+
+
+
+
+@app.route('/webapp')
+@check_login
+def webapp():
+    # eturn redirect(url_for('index'))
+    check_all_gpios()
+    return render_template('home.html', gpio_pin_state=gpio_pin_state)
+
+@app.route('/gpioon/<int:gpio_pin>')
+@check_login
+def gpioon(gpio_pin):
+    if gpio_pin in GPIO_PINS:
+        GPIO.output(gpio_pin, True)
+    return redirect(url_for('webapp'))
+
+
+@app.route('/gpiooff/<int:gpio_pin>')
+@check_login
+def gpiooff(gpio_pin):
+    if gpio_pin in GPIO_PINS:
+        GPIO.output(gpio_pin, False)
+    return redirect(url_for('webapp'))
+
+
+@app.route('/switch')
+@check_login
+def switch():
+    swap_states()
+    return redirect(url_for('webapp'))
+
+
+@app.route('/all/<state>')
+@check_login
+def all(state):
+    if state == "off":
+        allonoroff(False)
+    else:
+        allonoroff(True)
+    return redirect(url_for('webapp'))
+
+
+######################### End code here ##############################
 
 if __name__ == '__main__':
     # with app.app_context():
