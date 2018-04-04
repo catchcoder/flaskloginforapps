@@ -104,10 +104,11 @@ def index():
 
 
 @app.route('/home')
+@check_login
 def home():
-    # if 'email' not in session:
-    #     return redirect(url_for('index'))
     return render_template('home.html', gpio_pin_state=gpio_pin_state)
+
+
 
 
 @app.route('/logoff')
@@ -115,6 +116,7 @@ def logoff():
     if 'email' in session:
         session.pop('email')
     return redirect(url_for('index'))
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
