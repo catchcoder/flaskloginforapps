@@ -1,6 +1,11 @@
 # config with passwords in
 config.ini
 
+# Random Files
+wsgi.py
+key.pem
+weblogin.ini
+
 #pycharm info
 .idea/
 
