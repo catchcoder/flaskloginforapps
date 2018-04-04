@@ -79,7 +79,7 @@ def emailuser(email, confirm_url, first_name):
     msg = Message(subject="Login confirm registration",
                   sender="Register@flasklogin.com",
                   recipients=[email])
-    msg.html = render_template(url_for('email.html'),first_name, confirm_url)
+    msg.html = render_template('email.html',first_name=first_name, confirm_url=confirm_url)
     # msg.html = "<!DOCTYPE html>"
     # msg.html += "<h2>Weblogin - please confirm email address</h2>"
     # msg.html += "<div>Click on the link to activate the your account.</div>"
@@ -160,12 +160,13 @@ def signup():
         if not form.validate():
             return render_template('signup.html', form=form)
         else:
+            email = form.email.data.lower().strip()
             email_verify_code = str(uuid.uuid1())
             first_name = form.first_name.data.title().strip()
             password =form.password.data
             newuser = User(first_name,
-                           form.last_name.data.title.strip(),
-                           form.email.data.lower().strip(),
+                           form.last_name.data.title().strip(),
+                           email,
                            password,
                            False,
                            email_verify_code,
@@ -174,9 +175,9 @@ def signup():
             db.session.commit()
 
             confirmurl = "http://localhost:5000/" + \
-                parse.quote(form.email.data) + "/" + email_verify_code
+                parse.quote(email) + "/" + email_verify_code
 
-            emailuser(password, confirmurl, first_name)
+            emailuser(email, confirmurl, first_name)
 
             # "success meet requirements"
             return redirect(url_for('login', id='emailsent'))
