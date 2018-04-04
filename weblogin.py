@@ -161,6 +161,12 @@ def signup():
             return render_template('signup.html', form=form)
         else:
             email = form.email.data.lower().strip()
+            # Check if email already used
+            user = User.query.filter_by(email=email).first()
+            if user is not None:
+                return redirect(url_for('login', id='emailexist'))
+            # Compose and send email
+
             email_verify_code = str(uuid.uuid1())
             first_name = form.first_name.data.title().strip()
             password =form.password.data
