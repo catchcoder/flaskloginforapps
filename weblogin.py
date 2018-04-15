@@ -196,7 +196,7 @@ def signup():
             # Compose and send email
             # email_to_Hex = lambda x: "".join([hex(ord(c))[2:].zfill(2) for c in x])
 
-            email_verify_code = str(uuid.uuid1()).replace("-","") + str( uuid.uuid1()).replace("-","")
+            email_verify_code = (str(uuid.uuid4()) + str( uuid.uuid4())).replace("-","")
             first_name = form.first_name.data.title().strip()
             password =form.password.data
             newuser = User(first_name,
