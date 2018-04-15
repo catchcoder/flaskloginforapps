@@ -38,3 +38,10 @@ class LoginForm(FlaskForm):
                         min=8,
                         message="Passwords must be 8 characters or more.")])
     submit = SubmitField('Login', validators=[DataRequired()])
+
+
+class ResetForm(FlaskForm):
+    email = StringField('Email address', validators=[DataRequired(
+        "Please enter your email address."),
+        Email("Please enter a valid email address.")])
+    submit = SubmitField('Reset', validators=[DataRequired()])

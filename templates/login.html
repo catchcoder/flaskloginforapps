@@ -16,6 +16,10 @@
     {% if id == 'emailchecked' %}
         <div class="alert alert-success" role="alert">Valid email address</div>
     {% endif %}
+    {% if id == 'emailexist' %}
+        <div class="alert alert-success" role="alert">Email address already used</div>
+    {% endif %}
+
         {{ form.hidden_tag() }}
         <div class="form-group">
             {{ form.email.label }}
@@ -36,7 +40,9 @@
             {{ form.password }}
         </div>
         {{ form.submit(class="btn btn-primary") }}
+        <div><a href="{{ url_for('passwordreset') }}">Reset Password</a></div>
     </form>
 </div>
+
 </main>
 {% endblock %}

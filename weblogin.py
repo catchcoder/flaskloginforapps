@@ -21,7 +21,7 @@ from urllib import parse
 from flask import Flask, render_template, request, url_for, session, redirect
 from flask_mail import Mail, Message
 
-from forms import SignupForm, LoginForm
+from forms import SignupForm, LoginForm, ResetForm
 app = Flask(__name__)
 
 app.secret_key = "Development Key"
@@ -148,6 +148,34 @@ def login():
         return render_template('login.html', form=form, id=id)
 
 
+@app.route('/passwordreset', methods=['GET', 'POST'])
+def passwordreset():
+
+    form = ResetForm()
+
+    if request.method == "GET":
+        return render_template('passwordreset.html', form=form)
+
+    elif request.method == "POST":
+        email = form.email.data.lower().strip()
+        user = User.query.filter_by(email=email).first()
+        if user is None:
+            return redirect(url_for('passwordreset', id='noemail'))
+
+        first_name = user.first_name
+        email_verify_code = str(uuid.uuid1()).replace("-","") + str( uuid.uuid1()).replace("-","")
+        confirmurl = "http://localhost:5000/reset/" + \
+                    email_verify_code
+
+        # emailuser(email, confirmurl, first_name)
+        #return email + confirmurl + first_name
+
+        # "success meet requirements"
+        return redirect(url_for('login', id='emailsent'))
+
+    return redirect(url_for('passwordreset', id='failed'))
+
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if CFG['system_settings']['disable_signup'] == "True":
@@ -166,8 +194,9 @@ def signup():
             if user is not None:
                 return redirect(url_for('login', id='emailexist'))
             # Compose and send email
+            # email_to_Hex = lambda x: "".join([hex(ord(c))[2:].zfill(2) for c in x])
 
-            email_verify_code = str(uuid.uuid1())
+            email_verify_code = str(uuid.uuid1()).replace("-","") + str( uuid.uuid1()).replace("-","")
             first_name = form.first_name.data.title().strip()
             password =form.password.data
             newuser = User(first_name,
@@ -187,6 +216,9 @@ def signup():
 
             # "success meet requirements"
             return redirect(url_for('login', id='emailsent'))
+
+# @app.route('/reset/email>/<email_verify_code>')
+# def resetpassword(email, email_verify_code):
 
 
 @app.route('/<email>/<email_verify_code>')
