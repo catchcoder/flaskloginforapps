@@ -87,6 +87,19 @@ def emailuser(email, confirm_url, first_name):
     mail.send(msg)
 
 
+def email_user_password_reset(email, confirm_url, first_name):
+
+    msg = Message(subject="Login confirm registration",
+                  sender="Register@flasklogin.com",
+                  recipients=[email])
+    msg.html = render_template('email.html',first_name=first_name, confirm_url=confirm_url)
+    # msg.html = "<!DOCTYPE html>"
+    # msg.html += "<h2>Weblogin - please confirm email address</h2>"
+    # msg.html += "<div>Click on the link to activate the your account.</div>"
+    # msg.html += "<div><a href=\"" + confirm_url + "\">Activate account</a><div>"
+    mail.send(msg)
+
+
 def check_login(func):
     @wraps(func)
     def func_wrapper(*args, **kwargs):
@@ -149,7 +162,7 @@ def login():
 
 
 @app.route('/passwordreset', methods=['GET', 'POST'])
-def passwordreset():
+def passwordreset_request():
 
     form = ResetForm()
 
@@ -161,13 +174,14 @@ def passwordreset():
         user = User.query.filter_by(email=email).first()
         if user is None:
             return redirect(url_for('passwordreset', id='noemail'))
-
         first_name = user.first_name
+
         email_verify_code = str(uuid.uuid1()).replace("-","") + str( uuid.uuid1()).replace("-","")
         confirmurl = "http://localhost:5000/reset/" + \
                     email_verify_code
+        session['emailreset'] = email
 
-        # emailuser(email, confirmurl, first_name)
+        email_user_password_reset(email, confirmurl, first_name)
         #return email + confirmurl + first_name
 
         # "success meet requirements"
@@ -175,6 +189,23 @@ def passwordreset():
 
     return redirect(url_for('passwordreset', id='failed'))
 
+@app.route('/reset/<email_verify_code>')
+def password_reset(email_verify_code):
+
+    # check if session set
+
+    # get
+
+    # render page
+
+    # post
+    
+    # check database for verify code
+
+    # delete session value and clear database
+    if 'emailreset' in session:
+        session.pop('emailreset')
+    # render page
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
