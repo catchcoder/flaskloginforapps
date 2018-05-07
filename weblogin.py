@@ -29,7 +29,7 @@ from models import db, User, system_settings
 
 
 # Load setting and passwords from config.ini
-# config.ini.example if provided, rename and edit
+# config.ini if provided, rename and edit
 CFG = configparser.ConfigParser()
 # Check if config.ini file exist before loading
 if path.isfile('config.ini'):
@@ -192,9 +192,14 @@ def passwordreset_request():
 @app.route('/reset/<email_verify_code>')
 def password_reset(email_verify_code):
 
+
     # check if session set
 
     # get
+    if request.method == ('GET'):
+        pass
+
+
 
     # render page
 
